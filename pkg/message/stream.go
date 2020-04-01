@@ -21,7 +21,7 @@ func (st *MsgStream) readVint() uint {
 	return uint(val)
 }
 
-func (st *MsgStream) readData() []byte {
+func (st *MsgStream) readLenDelimData() []byte {
 	size, _ := binary.ReadUvarint(st.in)
 	data := make([]byte, size)
 	ptr := uint64(0)
@@ -37,7 +37,7 @@ func (st *MsgStream) writeVint(val uint) {
 	st.out.Write(st.tmp[:n])
 }
 
-func (st *MsgStream) writeData(data []byte) {
+func (st *MsgStream) writeLenDelimData(data []byte) {
 	n := binary.PutUvarint(st.tmp, uint64(len(data)))
 	st.out.Write(st.tmp[:n])
 	st.out.Write(data)

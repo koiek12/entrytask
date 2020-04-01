@@ -28,14 +28,14 @@ type LoginRequest struct {
 }
 
 func ReadLoginRequest(st *MsgStream) (interface{}, error) {
-	id := string(st.readData())
-	password := string(st.readData())
+	id := string(st.readLenDelimData())
+	password := string(st.readLenDelimData())
 	return LoginRequest{id, password}, nil
 }
 
 func WriteLoginRequest(st *MsgStream, req interface{}) error {
-	st.writeData([]byte(req.(LoginRequest).Id))
-	st.writeData([]byte(req.(LoginRequest).Password))
+	st.writeLenDelimData([]byte(req.(LoginRequest).Id))
+	st.writeLenDelimData([]byte(req.(LoginRequest).Password))
 	return nil
 }
 
@@ -46,12 +46,12 @@ type LoginResponse struct {
 
 func ReadLoginResponse(st *MsgStream) (interface{}, error) {
 	code := st.readVint()
-	token := st.readData()
+	token := st.readLenDelimData()
 	return LoginResponse{code, string(token)}, nil
 }
 
 func WriteLoginResponse(st *MsgStream, req interface{}) error {
 	st.writeVint(req.(LoginResponse).Code)
-	st.writeData([]byte(req.(LoginResponse).Token))
+	st.writeLenDelimData([]byte(req.(LoginResponse).Token))
 	return nil
 }
