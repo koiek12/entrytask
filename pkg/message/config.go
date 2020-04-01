@@ -2,14 +2,14 @@ package message
 
 import "reflect"
 
-var MsgNums = map[string]int{
+var msgNums = map[string]int{
 	"message.LoginRequest":  0,
 	"message.LoginResponse": 1,
 }
 
 func GetMsgNum(msg interface{}) int {
 	msgType := reflect.TypeOf(msg).String()
-	return MsgNums[msgType]
+	return msgNums[msgType]
 }
 
 var ReadMsgFunc = []func(*MsgStream) (interface{}, error){
@@ -34,7 +34,6 @@ func ReadLoginRequest(st *MsgStream) (interface{}, error) {
 }
 
 func WriteLoginRequest(st *MsgStream, req interface{}) error {
-	st.writeVint(uint(0))
 	st.writeData([]byte(req.(LoginRequest).Id))
 	st.writeData([]byte(req.(LoginRequest).Password))
 	return nil
@@ -52,7 +51,6 @@ func ReadLoginResponse(st *MsgStream) (interface{}, error) {
 }
 
 func WriteLoginResponse(st *MsgStream, req interface{}) error {
-	st.writeVint(uint(1))
 	st.writeVint(req.(LoginResponse).Code)
 	st.writeData([]byte(req.(LoginResponse).Token))
 	return nil

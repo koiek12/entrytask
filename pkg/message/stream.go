@@ -17,8 +17,8 @@ func NewMsgStream(in io.Reader, out io.Writer) *MsgStream {
 }
 
 func (st *MsgStream) readVint() uint {
-	reqType, _ := binary.ReadUvarint(st.in)
-	return uint(reqType)
+	val, _ := binary.ReadUvarint(st.in)
+	return uint(val)
 }
 
 func (st *MsgStream) readData() []byte {
@@ -32,8 +32,8 @@ func (st *MsgStream) readData() []byte {
 	return data
 }
 
-func (st *MsgStream) writeVint(reqType uint) {
-	n := binary.PutUvarint(st.tmp, uint64(reqType))
+func (st *MsgStream) writeVint(val uint) {
+	n := binary.PutUvarint(st.tmp, uint64(val))
 	st.out.Write(st.tmp[:n])
 }
 
@@ -50,6 +50,7 @@ func (st *MsgStream) ReadMsg() (interface{}, error) {
 
 func (st *MsgStream) WriteMsg(msg interface{}) {
 	msgNum := GetMsgNum(msg)
+	st.writeVint(uint(msgNum))
 	WriteMsgFunc[msgNum](st, msg)
 	st.out.Flush()
 }
