@@ -7,9 +7,13 @@ var msgNums = map[string]int{
 	"message.LoginResponse": 1,
 }
 
-func GetMsgNum(msg interface{}) int {
+func GetMsgNum(msg interface{}) (int, error) {
 	msgType := reflect.TypeOf(msg).String()
-	return msgNums[msgType]
+	num, ok := msgNums[msgType]
+	if !ok {
+		return 0, nil
+	}
+	return num, nil
 }
 
 var ReadMsgFunc = []func(*MsgStream) (interface{}, error){
@@ -28,15 +32,21 @@ type LoginRequest struct {
 }
 
 func ReadLoginRequest(st *MsgStream) (interface{}, error) {
-	id := string(st.readLenDelimData())
-	password := string(st.readLenDelimData())
-	return LoginRequest{id, password}, nil
+	id, err := st.readLenDelimData()
+	if err != nil {
+		return nil, err
+	}
+	password, err := st.readLenDelimData()
+	return LoginRequest{string(id), string(password)}, err
 }
 
 func WriteLoginRequest(st *MsgStream, req interface{}) error {
-	st.writeLenDelimData([]byte(req.(LoginRequest).Id))
-	st.writeLenDelimData([]byte(req.(LoginRequest).Password))
-	return nil
+	err := st.writeLenDelimData([]byte(req.(LoginRequest).Id))
+	if err != nil {
+		return err
+	}
+	err = st.writeLenDelimData([]byte(req.(LoginRequest).Password))
+	return err
 }
 
 type LoginResponse struct {
@@ -45,13 +55,19 @@ type LoginResponse struct {
 }
 
 func ReadLoginResponse(st *MsgStream) (interface{}, error) {
-	code := st.readVint()
-	token := st.readLenDelimData()
-	return LoginResponse{code, string(token)}, nil
+	code, err := st.readVint()
+	if err != nil {
+		return nil, err
+	}
+	token, err := st.readLenDelimData()
+	return LoginResponse{code, string(token)}, err
 }
 
 func WriteLoginResponse(st *MsgStream, req interface{}) error {
-	st.writeVint(req.(LoginResponse).Code)
-	st.writeLenDelimData([]byte(req.(LoginResponse).Token))
-	return nil
+	err := st.writeVint(req.(LoginResponse).Code)
+	if err != nil {
+		return err
+	}
+	err = st.writeLenDelimData([]byte(req.(LoginResponse).Token))
+	return err
 }

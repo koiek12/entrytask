@@ -17,9 +17,12 @@ const (
 
 func handleRequest(conn net.Conn) {
 	defer conn.Close()
-	stream := message.NewMsgStream(conn, conn)
+	stream, _ := message.NewMsgStream(conn, conn)
 	for {
-		req, _ := stream.ReadMsg()
+		req, err := stream.ReadMsg()
+		if err != nil {
+			break
+		}
 		switch req.(type) {
 		case message.LoginRequest:
 			handleLoginRequest(req.(message.LoginRequest), stream)
